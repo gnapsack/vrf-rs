@@ -28,6 +28,10 @@ impl<'a> VRF<PublicKey<'a>, SecretKey<'a>> for DummyVRF {
     fn verify(&mut self, _y: PublicKey, _pi: &[u8], _alpha: &[u8]) -> Result<Vec<u8>, Self::Error> {
         Ok(vec![])
     }
+
+    fn precompute(&mut self, y: PublicKey, pi: &[u8], alpha: &[u8]) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>), Self::Error> {
+        Ok((vec![], vec![], vec![]))
+    }
 }
 
 #[cfg(test)]

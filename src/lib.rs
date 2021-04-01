@@ -46,4 +46,16 @@ pub trait VRF<PublicKey, SecretKey> {
     ///
     /// * If successful, a vector of octets with the VRF hash output.
     fn verify(&mut self, y: PublicKey, pi: &[u8], alpha: &[u8]) -> Result<Vec<u8>, Self::Error>;
+
+    /// Computes the points that are needed for the fastVerify solidity function.
+    ///
+    /// # Arguments
+    ///
+    /// * `y`   - A public key.
+    /// * `pi`  - A slice of octets representing the VRF proof.
+    ///
+    /// # Returns
+    ///
+    /// * If successful, a triplet of octets corresponding to three points U, s*H, and c*Gamma.
+    fn precompute(&mut self, y: PublicKey, pi: &[u8], alpha: &[u8]) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>), Self::Error>;
 }

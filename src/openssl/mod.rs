@@ -576,6 +576,50 @@ impl VRF<&[u8], &[u8]> for ECVRF {
 
         Ok(beta)
     }
+
+    /// Precomptues U, s*H, and c*Gamma according to the verify function. These points
+    /// can be used for the fastVerify in [vrf-solidity](https://www.npmjs.com/package/vrf-solidity).
+    ///
+    /// # Arguments
+    ///
+    /// * `y`   - A slice representing the public key in octets.
+    /// * `pi`  - A slice of octets representing the VRF proof.
+    ///
+    /// # Returns
+    ///
+    /// * If successful, a triplet of octets corresponding to three points U, s*H, and c*Gamma.
+    fn precompute(&mut self, y: &[u8], pi: &[u8], alpha: &[u8]) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>), Error> {
+        // Step 1: decode proof
+        let (gamma_point, c, s) = self.decode_proof(&pi)?;
+
+        // Step 2: hash to curve
+        let public_key_point = EcPoint::from_bytes(&self.group, &y, &mut self.bn_ctx)?;
+        let h_point = self.hash_to_try_and_increment(&public_key_point, alpha)?;
+
+        // Step 3: U = sB -cY
+        let mut s_b = EcPoint::new(&self.group.as_ref())?;
+        let mut c_y = EcPoint::new(&self.group.as_ref())?;
+        let mut u_point = EcPoint::new(&self.group.as_ref())?;
+        s_b.mul_generator(&self.group, &s, &self.bn_ctx)?;
+        c_y.mul(&self.group, &public_key_point, &c, &self.bn_ctx)?;
+        c_y.invert(&self.group, &self.bn_ctx)?;
+        u_point.add(&self.group, &s_b, &c_y, &mut self.bn_ctx)?;
+
+        // Step 4: V = sH -cGamma
+        let mut s_h = EcPoint::new(&self.group.as_ref())?;
+        let mut c_gamma = EcPoint::new(&self.group.as_ref())?;
+        let mut v_point = EcPoint::new(&self.group.as_ref())?;
+        s_h.mul(&self.group, &h_point, &s, &self.bn_ctx)?;
+        c_gamma.mul(&self.group, &gamma_point, &c, &self.bn_ctx)?;
+        c_gamma.invert(&self.group, &self.bn_ctx)?;
+
+        // Return U, sH and cGamma
+        Ok((
+            u_point.to_bytes(&self.group, PointConversionForm::COMPRESSED,&mut self.bn_ctx)?,
+            s_h.to_bytes(&self.group, PointConversionForm::COMPRESSED,&mut self.bn_ctx)?,
+            c_gamma.to_bytes(&self.group, PointConversionForm::COMPRESSED,&mut self.bn_ctx)?
+        ))
+    }
 }
 
 #[cfg(test)]
