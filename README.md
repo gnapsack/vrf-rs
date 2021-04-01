@@ -1,6 +1,8 @@
 # vrf-rs
 [![](https://img.shields.io/crates/v/vrf.svg)](https://crates.io/crates/vrf) [![](https://docs.rs/vrf/badge.svg)](https://docs.rs/vrf) [![](https://travis-ci.com/witnet/vrf-rs.svg?branch=master)](https://travis-ci.com/witnet/vrf-rs)
 
+This fork extends the the `vrf-rs` library to be compatible with `vrf-solidity`, i.e. it provides additional functions to precompute the parameters necessary for `fastVerifiy`.
+
 `vrf-rs` is an open source implementation of Verifiable Random Functions (VRFs) written in Rust.
 
 _DISCLAIMER: This is experimental software. Be careful!_
