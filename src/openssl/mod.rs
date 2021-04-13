@@ -620,11 +620,42 @@ impl VRF<&[u8], &[u8]> for ECVRF {
             c_gamma.to_bytes(&self.group, PointConversionForm::COMPRESSED,&mut self.bn_ctx)?
         ))
     }
+
+    /// Expands the given proof from compressed format to uncompressed format.
+    ///
+    /// # Arguments
+    ///
+    /// * `pi`  - A slice of octets representing the compressed VRF proof.
+    ///
+    /// # Returns
+    ///
+    /// * If successful, a vector of octets with the uncompressed VRF proof.
+    fn expand(&mut self, pi: &[u8]) -> Result<[Vec<u8>; 4], Error> {
+        let (gamma_point, c, s) = self.decode_proof(&pi)?;
+        let gamma = gamma_point.to_bytes(&self.group, PointConversionForm::UNCOMPRESSED, &mut self.bn_ctx)?;
+        let c_string = append_leading_zeros(&c.to_vec(), self.n);
+        let s_string = append_leading_zeros(&s.to_vec(), self.qlen);
+        Ok([gamma[1..33].to_vec(), gamma[33..65].to_vec(), c_string, s_string])
+    }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn test_expand_trivial() {
+        let mut vrf = ECVRF::from_suite(CipherSuite::P256_SHA256_TAI).unwrap();
+        // Secret Key (labelled as x)
+        let x = hex::decode("c9afa9d845ba75166b5c215767b1d6934e50c3db36e89b127b8a622b120f6721")
+            .unwrap();
+        // Data: ASCII "sample"
+        let alpha = hex::decode("73616d706c65").unwrap();
+
+        let pi = vrf.prove(&x, &alpha).unwrap();
+        let mut vrf = ECVRF::from_suite(CipherSuite::P256_SHA256_TAI).unwrap();
+        let gamma = vrf.expand(&pi).unwrap();
+    }
 
     #[test]
     fn test_derive_public_key() {
