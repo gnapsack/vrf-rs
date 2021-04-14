@@ -588,7 +588,7 @@ impl VRF<&[u8], &[u8]> for ECVRF {
     /// # Returns
     ///
     /// * If successful, a triplet of octets corresponding to three points U, s*H, and c*Gamma.
-    fn precompute(&mut self, y: &[u8], pi: &[u8], alpha: &[u8]) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>), Error> {
+    fn precompute(&mut self, y: &[u8], pi: &[u8], alpha: &[u8]) -> Result<[Vec<u8>; 6], Error> {
         // Step 1: decode proof
         let (gamma_point, c, s) = self.decode_proof(&pi)?;
 
@@ -613,12 +613,17 @@ impl VRF<&[u8], &[u8]> for ECVRF {
         c_gamma.mul(&self.group, &gamma_point, &c, &self.bn_ctx)?;
         c_gamma.invert(&self.group, &self.bn_ctx)?;
 
+        let u_point = u_point.to_bytes(&self.group, PointConversionForm::UNCOMPRESSED,&mut self.bn_ctx)?;
+        let s_h = s_h.to_bytes(&self.group, PointConversionForm::UNCOMPRESSED,&mut self.bn_ctx)?;
+        let c_gamma = c_gamma.to_bytes(&self.group, PointConversionForm::UNCOMPRESSED,&mut self.bn_ctx)?;
         // Return U, sH and cGamma
-        Ok((
-            u_point.to_bytes(&self.group, PointConversionForm::COMPRESSED,&mut self.bn_ctx)?,
-            s_h.to_bytes(&self.group, PointConversionForm::COMPRESSED,&mut self.bn_ctx)?,
-            c_gamma.to_bytes(&self.group, PointConversionForm::COMPRESSED,&mut self.bn_ctx)?
-        ))
+        Ok([u_point[1..33].to_vec(),
+            u_point[33..65].to_vec(),
+            s_h[1..33].to_vec(),
+            s_h[33..65].to_vec(),
+            c_gamma[1..33].to_vec(),
+            c_gamma[33..65].to_vec(),
+        ])
     }
 
     /// Expands the given proof from compressed format to uncompressed format.

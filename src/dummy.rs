@@ -29,8 +29,8 @@ impl<'a> VRF<PublicKey<'a>, SecretKey<'a>> for DummyVRF {
         Ok(vec![0])
     }
     
-    fn precompute(&mut self, y: PublicKey, pi: &[u8], alpha: &[u8]) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>), Self::Error> {
-        Ok((vec![0], vec![0], vec![0]))
+    fn precompute(&mut self, y: PublicKey, pi: &[u8], alpha: &[u8]) -> Result<[Vec<u8>; 6], Self::Error> {
+        Ok([vec![0], vec![0], vec![0], vec![0], vec![0], vec![0]])
     }
     
     fn expand(&mut self, pi: &[u8]) -> Result<[Vec<u8>; 4], Self::Error> {
@@ -65,7 +65,7 @@ mod test {
         let pi = [0];
         let alpha = [0, 0, 0];
 
-        assert_eq!(DummyVRF.precompute(&y, &pi, &alpha).unwrap(), (vec![0], vec![0], vec![0]));
+        assert_eq!(DummyVRF.precompute(&y, &pi, &alpha).unwrap(), [vec![0], vec![0], vec![0], vec![0], vec![0], vec![0]]);
     }
     #[test]
     fn test_expand() {

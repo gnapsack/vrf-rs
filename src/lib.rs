@@ -57,7 +57,7 @@ pub trait VRF<PublicKey, SecretKey> {
     /// # Returns
     ///
     /// * If successful, a triplet of octets corresponding to three points U, s*H, and c*Gamma.
-    fn precompute(&mut self, y: PublicKey, pi: &[u8], alpha: &[u8]) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>), Self::Error>;
+    fn precompute(&mut self, y: PublicKey, pi: &[u8], alpha: &[u8]) -> Result<[Vec<u8>; 6], Self::Error>;
     
     /// Expands the given proof from compressed format to uncompressed format.
     ///
