@@ -611,7 +611,6 @@ impl VRF<&[u8], &[u8]> for ECVRF {
         let mut v_point = EcPoint::new(&self.group.as_ref())?;
         s_h.mul(&self.group, &h_point, &s, &self.bn_ctx)?;
         c_gamma.mul(&self.group, &gamma_point, &c, &self.bn_ctx)?;
-        c_gamma.invert(&self.group, &self.bn_ctx)?;
 
         let u_point = u_point.to_bytes(&self.group, PointConversionForm::UNCOMPRESSED,&mut self.bn_ctx)?;
         let s_h = s_h.to_bytes(&self.group, PointConversionForm::UNCOMPRESSED,&mut self.bn_ctx)?;
